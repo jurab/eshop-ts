@@ -8,10 +8,14 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-07-09",
   "compatibility_flags": ["nodejs_compat"],
+  // The HTML documents run through the worker so it can stamp ENV_LABEL into
+  // them (src/lib/branding.ts). Dropping one from run_worker_first serves it
+  // straight from the asset server, unlabelled and with no error — so the list
+  // is pinned against the worker's own routes in tests/node/branding.test.ts.
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/", "/index.html", "/admin.html"]
   },
   "d1_databases": [
     {
@@ -25,7 +29,10 @@
   // turn admin image uploads back on; no other change is needed.
   "vars": {
     "STRIPE_CURRENCY": "eur",
-    "PASSWORD_HASH_ITERATIONS": 100000
+    "PASSWORD_HASH_ITERATIONS": 100000,
+    // Suffixed onto the brand in the served HTML. Empty here on purpose: this
+    // is production and it must render as plain "eshop".
+    "ENV_LABEL": ""
   },
   // `assets` is inherited by environments; `vars` and bindings are NOT — every
   // env must repeat them or it silently deploys without them. tests/node/envs
@@ -43,7 +50,8 @@
       ],
       "vars": {
         "STRIPE_CURRENCY": "eur",
-        "PASSWORD_HASH_ITERATIONS": 100000
+        "PASSWORD_HASH_ITERATIONS": 100000,
+        "ENV_LABEL": "-test"
       }
     }
   }

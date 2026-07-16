@@ -8,6 +8,7 @@ import type { UserRow } from "./db/schema";
 // Sending domain, order emails are skipped and nothing else degrades.
 export interface Bindings {
   DB: D1Database;
+  ASSETS: Fetcher;
   MEDIA?: R2Bucket;
   EMAIL?: SendEmail;
   EMAIL_FROM?: string;
@@ -18,6 +19,8 @@ export interface Bindings {
   SENTRY_DSN: string;
   STRIPE_CURRENCY: string;
   PASSWORD_HASH_ITERATIONS: string;
+  // "" in production, "-test" in dev. See lib/branding.ts.
+  ENV_LABEL: string;
 }
 
 export type App = Hono<{ Bindings: Bindings; Variables: { user?: UserRow } }>;

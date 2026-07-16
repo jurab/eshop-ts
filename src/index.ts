@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/cloudflare";
 import type { Bindings } from "./types";
 import type { UserRow } from "./db/schema";
 import { withSentry } from "./lib/sentry";
+import { HTML_DOCUMENTS, labelDocument } from "./lib/branding";
 import authRoutes from "./routes/auth";
 import productsRouter from "./routes/products";
 import ordersRouter from "./routes/orders";
@@ -18,6 +19,15 @@ app.route("/api", productsRouter);
 app.route("/api", ordersRouter);
 app.route("/api/admin", admin);
 app.route("/api/support", supportRouter);
+
+// The HTML documents are claimed by `assets.run_worker_first`, so they arrive
+// here instead of going straight out of the asset server. We fetch the asset
+// ourselves (ASSETS.fetch bypasses run_worker_first, so this does not recurse)
+// and stamp the environment label into it. In production ENV_LABEL is "" and
+// labelDocument hands the response back untouched.
+for (const path of HTML_DOCUMENTS) {
+  app.get(path, async (c) => labelDocument(await c.env.ASSETS.fetch(c.req.raw), c.env.ENV_LABEL));
+}
 
 // Only reached for keys with no matching static asset under public/media/.
 app.get("/media/:key{.+}", async (c) => {

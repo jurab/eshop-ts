@@ -39,6 +39,10 @@ bug and watching it go red — a test that has never failed is not a test.
 | `env.N repeats every top-level var` | `vars` are **not** inherited by environments; a missing one is `undefined` at runtime, not a failed deploy | `tests/node/envs.test.ts` |
 | `every wrangler command in deploy-dev carries --env dev` | the dev workflow losing its env flag and migrating production instead | `tests/node/workflows.test.ts` |
 | `deploy-N runs the tests before it deploys` | shipping a red build | `tests/node/workflows.test.ts` |
+| `run_worker_first claims every document the worker rewrites` | a document dropped from `run_worker_first` — the asset server answers first and dev serves production's unlabelled HTML, with no error | `tests/node/branding.test.ts` |
+| `production ships an empty label` / `env.N ships a non-empty label` | prod rendering as `eshop-test`, or dev being visually indistinguishable from prod | `tests/node/branding.test.ts` |
+| `public/*.html still contains the brand token` | the rewriter keys on the literal string `eshop`; renaming the brand in the markup makes the stamp silently find nothing | `tests/node/branding.test.ts` |
+| `the label reaches the served HTML` | the rewriter itself, run against the real `public/` assets in workerd | `tests/branding.test.ts` |
 | `seed.sql still applies to the current schema` | hand-maintained seed SQL rotting against a schema change — only surfaces when provisioning a new environment | `tests/seed.test.ts` |
 | `the seeded password hashes still verify` | the seed's hash format drifting from `lib/hash.ts`, breaking both demo logins everywhere at once | `tests/seed.test.ts` |
 | `the API emits exactly the keys the frontend reads` | backend/frontend contract drift — the source of 3 of this rewrite's 4 real bugs | `tests/contract.test.ts` |
@@ -58,6 +62,12 @@ rather than letting them drift apart.
 - **Whether the real cloud honours `--env`.** Needs live credentials; can't be
   hermetic. Covered instead by the config test above plus the fact that tests
   run before any destructive step.
+- **Whether the real cloud honours `run_worker_first`.** `tests/branding.test.ts`
+  calls `worker.fetch` directly, so it proves the rewriter works but bypasses
+  the routing that hands it the document in the first place. The config test
+  pins the two lists against each other; the deploy itself is the only real
+  proof, which is why the dev URL's title is worth an eyeball after a change
+  to `assets`.
 
 ## Layout
 
