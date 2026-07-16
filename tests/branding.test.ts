@@ -38,4 +38,14 @@ describe("environment label in the served HTML", () => {
     expect(html).toMatch(/<a href="#\/">catalog<\/a>/);
     expect(html).toMatch(/desk gear/);
   });
+
+  // The rewriter sees raw source text, entities undecoded. A default (escaping)
+  // replace turns the title's pre-escaped "&amp;" into "&amp;amp;", which a
+  // browser renders as a literal "&amp;". Shipped exactly that way once.
+  it("does not re-escape entities in the text it rewrites", async () => {
+    const html = await fetchDocument("/", "-test");
+
+    expect(html).toMatch(/<title>eshop-test — desk gear &amp; peripherals<\/title>/);
+    expect(html).not.toMatch(/&amp;amp;/);
+  });
 });

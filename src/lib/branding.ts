@@ -36,7 +36,10 @@ class LabelHandler {
       chunk.remove();
       return;
     }
-    chunk.replace(labelText(this.buffer, this.label));
+    // html: true, because the buffered text is raw source — entities arrive
+    // undecoded, so the default (re-escaping) replace turns a pre-escaped
+    // "&amp;" into "&amp;amp;". The label itself is trusted config, not input.
+    chunk.replace(labelText(this.buffer, this.label), { html: true });
     this.buffer = "";
   }
 }
